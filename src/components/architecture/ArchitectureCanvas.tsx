@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ArchitectureComponent } from './ArchitectureComponent';
 import { DataPacket } from './DataPacket';
 import { architectureComponents } from '@/data/simulations';
@@ -30,15 +30,15 @@ export function ArchitectureCanvas({
   highlightedComponents,
 }: ArchitectureCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [basePositions, setBasePositions] = useState<Record<string, { x: number; y: number }>>({});
-  const [componentOffsets, setComponentOffsets] = useState<Record<string, { x: number; y: number }>>({});
+  const [componentPositions, setComponentPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [showPacket, setShowPacket] = useState(false);
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
+  const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
-  // Calculate base positions based on container size
+  // Calculate initial positions based on container size
   useEffect(() => {
     const updatePositions = () => {
       if (!containerRef.current) return;
@@ -52,7 +52,39 @@ export function ArchitectureCanvas({
       const externalTopY = height * 0.2;
       const externalBottomY = height * 0.85;
       
-      setBasePositions({
+      // Only set initial positions if not already set (to preserve user dragging)
+      setComponentPositions(prev => {
+        if (Object.keys(prev).length > 0) return prev;
+        
+        return {
+          browser: { x: width * 0.1, y: mainY },
+          frontend: { x: width * 0.32, y: mainY },
+          backend: { x: width * 0.54, y: mainY },
+          database: { x: width * 0.76, y: mainY },
+          auth: { x: width * 0.45, y: externalTopY },
+          email: { x: width * 0.58, y: externalTopY },
+          payment: { x: width * 0.71, y: externalTopY },
+          storage: { x: width * 0.12, y: externalBottomY },
+          cache: { x: width * 0.32, y: externalBottomY },
+          websocket: { x: width * 0.52, y: externalBottomY },
+        };
+      });
+    };
+
+    updatePositions();
+    
+    // Reset positions on window resize
+    const handleResize = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      
+      const mainY = height * 0.55;
+      const externalTopY = height * 0.2;
+      const externalBottomY = height * 0.85;
+      
+      setComponentPositions({
         browser: { x: width * 0.1, y: mainY },
         frontend: { x: width * 0.32, y: mainY },
         backend: { x: width * 0.54, y: mainY },
@@ -65,19 +97,9 @@ export function ArchitectureCanvas({
         websocket: { x: width * 0.52, y: externalBottomY },
       });
     };
-
-    updatePositions();
-    window.addEventListener('resize', updatePositions);
-    return () => window.removeEventListener('resize', updatePositions);
-  }, []);
-
-  // Initialize offsets for all components
-  useEffect(() => {
-    const offsets: Record<string, { x: number; y: number }> = {};
-    architectureComponents.forEach(comp => {
-      offsets[comp.id] = { x: 0, y: 0 };
-    });
-    setComponentOffsets(offsets);
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Show packet when step starts
@@ -92,18 +114,11 @@ export function ArchitectureCanvas({
     onStepComplete();
   };
 
-  // Get actual position (base + offset)
-  const getComponentPosition = useCallback((id: string) => {
-    const base = basePositions[id] || { x: 0, y: 0 };
-    const offset = componentOffsets[id] || { x: 0, y: 0 };
-    return { x: base.x + offset.x, y: base.y + offset.y };
-  }, [basePositions, componentOffsets]);
-
   const getPacketPositions = () => {
     if (!currentStep) return { from: { x: 0, y: 0 }, to: { x: 0, y: 0 } };
     
-    const fromPos = getComponentPosition(currentStep.from);
-    const toPos = getComponentPosition(currentStep.to);
+    const fromPos = componentPositions[currentStep.from] || { x: 0, y: 0 };
+    const toPos = componentPositions[currentStep.to] || { x: 0, y: 0 };
     
     return {
       from: { x: fromPos.x + 60, y: fromPos.y - 20 },
@@ -112,14 +127,18 @@ export function ArchitectureCanvas({
   };
 
   // Handle component drag
-  const handleComponentDrag = (id: string, deltaX: number, deltaY: number) => {
-    setComponentOffsets(prev => ({
+  const handleComponentDragEnd = (id: string, info: { point: { x: number; y: number }; offset: { x: number; y: number } }) => {
+    const currentPos = componentPositions[id];
+    if (!currentPos) return;
+    
+    setComponentPositions(prev => ({
       ...prev,
       [id]: {
-        x: (prev[id]?.x || 0) + deltaX / scale,
-        y: (prev[id]?.y || 0) + deltaY / scale,
+        x: currentPos.x + info.offset.x / scale,
+        y: currentPos.y + info.offset.y / scale,
       },
     }));
+    setDraggingComponent(null);
   };
 
   // Zoom controls
@@ -128,12 +147,26 @@ export function ArchitectureCanvas({
   const handleReset = () => {
     setScale(1);
     setPan({ x: 0, y: 0 });
-    setComponentOffsets(prev => {
-      const reset: Record<string, { x: number; y: number }> = {};
-      Object.keys(prev).forEach(key => {
-        reset[key] = { x: 0, y: 0 };
-      });
-      return reset;
+    // Reset to initial positions
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mainY = height * 0.55;
+    const externalTopY = height * 0.2;
+    const externalBottomY = height * 0.85;
+    
+    setComponentPositions({
+      browser: { x: width * 0.1, y: mainY },
+      frontend: { x: width * 0.32, y: mainY },
+      backend: { x: width * 0.54, y: mainY },
+      database: { x: width * 0.76, y: mainY },
+      auth: { x: width * 0.45, y: externalTopY },
+      email: { x: width * 0.58, y: externalTopY },
+      payment: { x: width * 0.71, y: externalTopY },
+      storage: { x: width * 0.12, y: externalBottomY },
+      cache: { x: width * 0.32, y: externalBottomY },
+      websocket: { x: width * 0.52, y: externalBottomY },
     });
   };
 
@@ -148,7 +181,8 @@ export function ArchitectureCanvas({
 
   // Handle canvas pan
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === containerRef.current || (e.target as HTMLElement).classList.contains('canvas-background')) {
+    const target = e.target as HTMLElement;
+    if (target.classList.contains('canvas-background') || target.tagName === 'svg') {
       setIsPanning(true);
       lastMousePos.current = { x: e.clientX, y: e.clientY };
     }
@@ -256,66 +290,62 @@ export function ArchitectureCanvas({
         }}
       >
         {/* Connection lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: 'visible' }}>
           {connections.map(({ from, to }) => {
-            const fromPos = getComponentPosition(from);
-            const toPos = getComponentPosition(to);
-            if (!fromPos.x || !toPos.x) return null;
+            const fromPos = componentPositions[from];
+            const toPos = componentPositions[to];
+            if (!fromPos || !toPos) return null;
 
             const isActive = currentStep && 
               ((currentStep.from === from && currentStep.to === to) ||
                (currentStep.from === to && currentStep.to === from));
 
+            // Calculate line endpoints at component centers
+            const fromX = fromPos.x;
+            const fromY = fromPos.y;
+            const toX = toPos.x;
+            const toY = toPos.y;
+
             return (
-              <motion.line
+              <line
                 key={`${from}-${to}`}
-                x1={fromPos.x + 60}
-                y1={fromPos.y}
-                x2={toPos.x}
-                y2={toPos.y}
+                x1={fromX}
+                y1={fromY}
+                x2={toX}
+                y2={toY}
                 className={cn(
                   'transition-all duration-300',
                   isActive ? 'stroke-primary' : 'stroke-border',
                 )}
                 strokeWidth={isActive ? 3 : 2}
                 strokeDasharray={isActive ? '0' : '8 4'}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isActive ? 1 : 0.3 }}
+                opacity={isActive ? 1 : 0.3}
               />
             );
           })}
         </svg>
 
         {/* Architecture components */}
-        {architectureComponents.map((comp) => {
-          const pos = getComponentPosition(comp.id);
-          if (!pos.x && !pos.y) return null;
+        {architectureComponents.map((comp, index) => {
+          const pos = componentPositions[comp.id];
+          if (!pos) return null;
 
           const isHighlighted = highlightedComponents.includes(comp.id);
           const isActive = currentStep && 
             (currentStep.from === comp.id || currentStep.to === comp.id);
 
           return (
-            <motion.div
+            <DraggableComponent
               key={comp.id}
-              className="absolute cursor-grab active:cursor-grabbing"
-              style={{ left: pos.x, top: pos.y, transform: 'translate(-50%, -50%)' }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: architectureComponents.indexOf(comp) * 0.1 }}
-              drag
-              dragMomentum={false}
-              onDrag={(e, info) => {
-                handleComponentDrag(comp.id, info.delta.x, info.delta.y);
-              }}
-              whileDrag={{ scale: 1.1, zIndex: 100 }}
-            >
-              <ArchitectureComponent
-                {...comp}
-                isHighlighted={isHighlighted}
-                isActive={isActive || false}
-              />
-            </motion.div>
+              comp={comp}
+              position={pos}
+              isHighlighted={isHighlighted}
+              isActive={isActive || false}
+              index={index}
+              scale={scale}
+              onDragEnd={(info) => handleComponentDragEnd(comp.id, info)}
+              onDragStart={() => setDraggingComponent(comp.id)}
+            />
           );
         })}
 
@@ -355,5 +385,77 @@ export function ArchitectureCanvas({
         </div>
       </div>
     </div>
+  );
+}
+
+// Separate draggable component to handle drag state properly
+interface DraggableComponentProps {
+  comp: typeof architectureComponents[0];
+  position: { x: number; y: number };
+  isHighlighted: boolean;
+  isActive: boolean;
+  index: number;
+  scale: number;
+  onDragEnd: (info: { point: { x: number; y: number }; offset: { x: number; y: number } }) => void;
+  onDragStart: () => void;
+}
+
+function DraggableComponent({ 
+  comp, 
+  position, 
+  isHighlighted, 
+  isActive, 
+  index, 
+  scale,
+  onDragEnd,
+  onDragStart,
+}: DraggableComponentProps) {
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+
+  return (
+    <motion.div
+      className="absolute cursor-grab active:cursor-grabbing"
+      style={{ 
+        left: position.x + dragOffset.x, 
+        top: position.y + dragOffset.y, 
+        transform: 'translate(-50%, -50%)',
+        zIndex: isDragging ? 100 : 1,
+      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ 
+        opacity: 1, 
+        y: 0,
+        scale: isDragging ? 1.1 : 1,
+      }}
+      transition={{ delay: index * 0.1 }}
+      drag
+      dragMomentum={false}
+      dragElastic={0}
+      onDragStart={() => {
+        setIsDragging(true);
+        onDragStart();
+      }}
+      onDrag={(e, info) => {
+        setDragOffset({
+          x: info.offset.x / scale,
+          y: info.offset.y / scale,
+        });
+      }}
+      onDragEnd={(e, info) => {
+        setIsDragging(false);
+        onDragEnd({
+          point: info.point,
+          offset: { x: info.offset.x, y: info.offset.y },
+        });
+        setDragOffset({ x: 0, y: 0 });
+      }}
+    >
+      <ArchitectureComponent
+        {...comp}
+        isHighlighted={isHighlighted}
+        isActive={isActive}
+      />
+    </motion.div>
   );
 }
