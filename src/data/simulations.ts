@@ -305,20 +305,19 @@ export const simulations: Simulation[] = [
     ],
   },
 
-  // ============ CRUD ADVANCED ============
+  // ============ CRUD BASE ============
   {
-    id: 'crud-basic',
-    name: 'CRUD di Base',
-    description: 'Le 4 operazioni fondamentali: Create, Read, Update, Delete',
+    id: 'crud-create',
+    name: 'Create (Creazione)',
+    description: 'Come creare un nuovo record nel database',
     category: 'crud',
     steps: [
-      // CREATE
       {
         id: 1,
         from: 'browser',
         to: 'frontend',
         data: '{ title, content }',
-        description: 'CREATE: L\'utente compila il form per creare un nuovo post',
+        description: 'L\'utente compila il form per creare un nuovo post',
         type: 'request',
       },
       {
@@ -353,17 +352,32 @@ export const simulations: Simulation[] = [
         description: 'Il backend risponde con status 201 e il post creato',
         type: 'response',
       },
-      // READ
       {
         id: 6,
+        from: 'frontend',
+        to: 'browser',
+        data: 'showToast("Post creato!")',
+        description: 'Il frontend mostra conferma e aggiorna la lista',
+        type: 'response',
+      },
+    ],
+  },
+  {
+    id: 'crud-read',
+    name: 'Read (Lettura)',
+    description: 'Come recuperare dati dal database',
+    category: 'crud',
+    steps: [
+      {
+        id: 1,
         from: 'browser',
         to: 'frontend',
         data: 'click("Vedi dettaglio")',
-        description: 'READ: L\'utente clicca per vedere i dettagli del post',
+        description: 'L\'utente clicca per vedere i dettagli del post',
         type: 'request',
       },
       {
-        id: 7,
+        id: 2,
         from: 'frontend',
         to: 'backend',
         data: 'GET /api/posts/1',
@@ -371,7 +385,7 @@ export const simulations: Simulation[] = [
         type: 'request',
       },
       {
-        id: 8,
+        id: 3,
         from: 'backend',
         to: 'database',
         data: 'SELECT * FROM posts WHERE id = 1',
@@ -379,7 +393,7 @@ export const simulations: Simulation[] = [
         type: 'request',
       },
       {
-        id: 9,
+        id: 4,
         from: 'database',
         to: 'backend',
         data: '{ id: 1, title, content, ... }',
@@ -387,24 +401,39 @@ export const simulations: Simulation[] = [
         type: 'response',
       },
       {
-        id: 10,
+        id: 5,
         from: 'backend',
         to: 'frontend',
         data: '200 OK { post: {...} }',
         description: 'Il backend risponde con status 200 e i dati',
         type: 'response',
       },
-      // UPDATE
       {
-        id: 11,
+        id: 6,
+        from: 'frontend',
+        to: 'browser',
+        data: 'render(post)',
+        description: 'Il frontend mostra i dettagli del post',
+        type: 'response',
+      },
+    ],
+  },
+  {
+    id: 'crud-update',
+    name: 'Update (Modifica)',
+    description: 'Come aggiornare un record esistente',
+    category: 'crud',
+    steps: [
+      {
+        id: 1,
         from: 'browser',
         to: 'frontend',
         data: '{ title: "Nuovo titolo" }',
-        description: 'UPDATE: L\'utente modifica il titolo del post',
+        description: 'L\'utente modifica il titolo del post',
         type: 'request',
       },
       {
-        id: 12,
+        id: 2,
         from: 'frontend',
         to: 'backend',
         data: 'PUT /api/posts/1',
@@ -412,7 +441,7 @@ export const simulations: Simulation[] = [
         type: 'request',
       },
       {
-        id: 13,
+        id: 3,
         from: 'backend',
         to: 'database',
         data: 'UPDATE posts SET title = "Nuovo titolo" WHERE id = 1',
@@ -420,7 +449,7 @@ export const simulations: Simulation[] = [
         type: 'request',
       },
       {
-        id: 14,
+        id: 4,
         from: 'database',
         to: 'backend',
         data: '{ updated: 1 }',
@@ -428,24 +457,39 @@ export const simulations: Simulation[] = [
         type: 'response',
       },
       {
-        id: 15,
+        id: 5,
         from: 'backend',
         to: 'frontend',
         data: '200 OK { post: {...} }',
         description: 'Il backend risponde con il post aggiornato',
         type: 'response',
       },
-      // DELETE
       {
-        id: 16,
+        id: 6,
+        from: 'frontend',
+        to: 'browser',
+        data: 'showToast("Modifiche salvate!")',
+        description: 'Il frontend mostra conferma all\'utente',
+        type: 'response',
+      },
+    ],
+  },
+  {
+    id: 'crud-delete',
+    name: 'Delete (Eliminazione)',
+    description: 'Come eliminare un record dal database',
+    category: 'crud',
+    steps: [
+      {
+        id: 1,
         from: 'browser',
         to: 'frontend',
         data: 'confirmDelete()',
-        description: 'DELETE: L\'utente conferma l\'eliminazione del post',
+        description: 'L\'utente conferma l\'eliminazione del post',
         type: 'request',
       },
       {
-        id: 17,
+        id: 2,
         from: 'frontend',
         to: 'backend',
         data: 'DELETE /api/posts/1',
@@ -453,7 +497,7 @@ export const simulations: Simulation[] = [
         type: 'request',
       },
       {
-        id: 18,
+        id: 3,
         from: 'backend',
         to: 'database',
         data: 'DELETE FROM posts WHERE id = 1',
@@ -461,7 +505,7 @@ export const simulations: Simulation[] = [
         type: 'request',
       },
       {
-        id: 19,
+        id: 4,
         from: 'database',
         to: 'backend',
         data: '{ deleted: 1 }',
@@ -469,7 +513,7 @@ export const simulations: Simulation[] = [
         type: 'response',
       },
       {
-        id: 20,
+        id: 5,
         from: 'backend',
         to: 'frontend',
         data: '204 No Content',
@@ -477,7 +521,7 @@ export const simulations: Simulation[] = [
         type: 'response',
       },
       {
-        id: 21,
+        id: 6,
         from: 'frontend',
         to: 'browser',
         data: 'redirect("/posts")',
@@ -486,6 +530,8 @@ export const simulations: Simulation[] = [
       },
     ],
   },
+
+  // ============ CRUD ADVANCED ============
   {
     id: 'update-profile',
     name: 'Modifica Profilo',
