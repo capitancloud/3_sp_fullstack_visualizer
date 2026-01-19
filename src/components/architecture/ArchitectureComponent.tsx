@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Monitor, Layout, Server, Database, Shield, Mail, Wallet, Bot } from 'lucide-react';
+import { Monitor, Layout, Server, Database, Shield, Mail, Wallet, Bot, CreditCard, HardDrive, Zap, Radio } from 'lucide-react';
 import { ComponentType } from '@/types/simulation';
 import { cn } from '@/lib/utils';
 
@@ -23,6 +23,10 @@ const iconMap: Record<string, React.ElementType> = {
   Mail,
   Wallet,
   Bot,
+  CreditCard,
+  HardDrive,
+  Zap,
+  Radio,
 };
 
 const typeStyles: Record<ComponentType, { bg: string; border: string; glow: string; text: string }> = {

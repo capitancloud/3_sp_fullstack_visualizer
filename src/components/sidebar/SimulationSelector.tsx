@@ -1,5 +1,10 @@
 import { motion } from 'framer-motion';
-import { LogIn, UserPlus, Download, ArrowRight } from 'lucide-react';
+import { 
+  LogIn, UserPlus, Download, ArrowRight, 
+  UserCog, UserX, Search,
+  ShieldX, FileQuestion, ServerCrash, Clock,
+  CreditCard, Upload, KeyRound, Zap, Bell, MessageCircle
+} from 'lucide-react';
 import { Simulation } from '@/types/simulation';
 import { cn } from '@/lib/utils';
 
@@ -10,9 +15,30 @@ interface SimulationSelectorProps {
 }
 
 const iconMap: Record<string, React.ElementType> = {
+  // Base
   login: LogIn,
   register: UserPlus,
   'load-data': Download,
+  // CRUD
+  'update-profile': UserCog,
+  'delete-account': UserX,
+  'search-filter': Search,
+  // Errors
+  'error-401': ShieldX,
+  'error-404': FileQuestion,
+  'error-500': ServerCrash,
+  'error-timeout': Clock,
+  // Payments
+  'payment-flow': CreditCard,
+  // Files
+  'file-upload': Upload,
+  // Auth
+  'reset-password': KeyRound,
+  // Performance
+  'cache-flow': Zap,
+  // Real-time
+  'realtime-notification': Bell,
+  'realtime-chat': MessageCircle,
 };
 
 export function SimulationSelector({
