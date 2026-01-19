@@ -19,9 +19,9 @@ export function DataPacket({
   onComplete,
 }: DataPacketProps) {
   const typeStyles = {
-    request: 'bg-client border-client text-client',
-    response: 'bg-backend border-backend text-backend',
-    error: 'bg-destructive border-destructive text-destructive',
+    request: 'bg-client/20 border-client text-white',
+    response: 'bg-backend/20 border-backend text-white',
+    error: 'bg-destructive/20 border-destructive text-white',
   };
 
   return (
@@ -45,8 +45,7 @@ export function DataPacket({
       }}
       onAnimationComplete={onComplete}
       className={cn(
-        'absolute z-50 px-3 py-1.5 rounded-lg border-2 backdrop-blur-sm font-mono text-xs whitespace-nowrap',
-        'bg-opacity-20',
+        'absolute z-50 px-3 py-2 rounded-lg border-2 backdrop-blur-md font-mono text-xs whitespace-nowrap shadow-lg',
         typeStyles[type],
       )}
     >
