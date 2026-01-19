@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArchitectureComponent } from './ArchitectureComponent';
 import { DataPacket } from './DataPacket';
 import { architectureComponents } from '@/data/simulations';
@@ -35,7 +35,6 @@ export function ArchitectureCanvas({
   const [scale, setScale] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
-  const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
   // Calculate initial positions based on container size
@@ -121,24 +120,17 @@ export function ArchitectureCanvas({
     const toPos = componentPositions[currentStep.to] || { x: 0, y: 0 };
     
     return {
-      from: { x: fromPos.x + 60, y: fromPos.y - 20 },
-      to: { x: toPos.x - 20, y: toPos.y - 20 },
+      from: { x: fromPos.x, y: fromPos.y },
+      to: { x: toPos.x, y: toPos.y },
     };
   };
 
-  // Handle component drag
-  const handleComponentDragEnd = (id: string, info: { point: { x: number; y: number }; offset: { x: number; y: number } }) => {
-    const currentPos = componentPositions[id];
-    if (!currentPos) return;
-    
+  // Handle component position update (called during and after drag)
+  const updateComponentPosition = (id: string, x: number, y: number) => {
     setComponentPositions(prev => ({
       ...prev,
-      [id]: {
-        x: currentPos.x + info.offset.x / scale,
-        y: currentPos.y + info.offset.y / scale,
-      },
+      [id]: { x, y },
     }));
-    setDraggingComponent(null);
   };
 
   // Zoom controls
@@ -289,41 +281,38 @@ export function ArchitectureCanvas({
           transformOrigin: 'center center',
         }}
       >
-        {/* Connection lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ overflow: 'visible' }}>
-          {connections.map(({ from, to }) => {
-            const fromPos = componentPositions[from];
-            const toPos = componentPositions[to];
-            if (!fromPos || !toPos) return null;
+        {/* Connection lines - rendered as individual SVG elements for proper positioning */}
+        {connections.map(({ from, to }) => {
+          const fromPos = componentPositions[from];
+          const toPos = componentPositions[to];
+          if (!fromPos || !toPos) return null;
 
-            const isActive = currentStep && 
-              ((currentStep.from === from && currentStep.to === to) ||
-               (currentStep.from === to && currentStep.to === from));
+          const isActive = currentStep && 
+            ((currentStep.from === from && currentStep.to === to) ||
+             (currentStep.from === to && currentStep.to === from));
 
-            // Calculate line endpoints at component centers
-            const fromX = fromPos.x;
-            const fromY = fromPos.y;
-            const toX = toPos.x;
-            const toY = toPos.y;
-
-            return (
+          return (
+            <svg
+              key={`${from}-${to}`}
+              className="absolute inset-0 w-full h-full pointer-events-none"
+              style={{ overflow: 'visible' }}
+            >
               <line
-                key={`${from}-${to}`}
-                x1={fromX}
-                y1={fromY}
-                x2={toX}
-                y2={toY}
+                x1={fromPos.x}
+                y1={fromPos.y}
+                x2={toPos.x}
+                y2={toPos.y}
                 className={cn(
-                  'transition-all duration-300',
+                  'transition-colors duration-300',
                   isActive ? 'stroke-primary' : 'stroke-border',
                 )}
                 strokeWidth={isActive ? 3 : 2}
                 strokeDasharray={isActive ? '0' : '8 4'}
                 opacity={isActive ? 1 : 0.3}
               />
-            );
-          })}
-        </svg>
+            </svg>
+          );
+        })}
 
         {/* Architecture components */}
         {architectureComponents.map((comp, index) => {
@@ -343,8 +332,7 @@ export function ArchitectureCanvas({
               isActive={isActive || false}
               index={index}
               scale={scale}
-              onDragEnd={(info) => handleComponentDragEnd(comp.id, info)}
-              onDragStart={() => setDraggingComponent(comp.id)}
+              onPositionChange={(x, y) => updateComponentPosition(comp.id, x, y)}
             />
           );
         })}
@@ -396,8 +384,7 @@ interface DraggableComponentProps {
   isActive: boolean;
   index: number;
   scale: number;
-  onDragEnd: (info: { point: { x: number; y: number }; offset: { x: number; y: number } }) => void;
-  onDragStart: () => void;
+  onPositionChange: (x: number, y: number) => void;
 }
 
 function DraggableComponent({ 
@@ -407,18 +394,17 @@ function DraggableComponent({
   isActive, 
   index, 
   scale,
-  onDragEnd,
-  onDragStart,
+  onPositionChange,
 }: DraggableComponentProps) {
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const startPosRef = useRef({ x: 0, y: 0 });
 
   return (
     <motion.div
       className="absolute cursor-grab active:cursor-grabbing"
       style={{ 
-        left: position.x + dragOffset.x, 
-        top: position.y + dragOffset.y, 
+        left: position.x, 
+        top: position.y, 
         transform: 'translate(-50%, -50%)',
         zIndex: isDragging ? 100 : 1,
       }}
@@ -428,27 +414,22 @@ function DraggableComponent({
         y: 0,
         scale: isDragging ? 1.1 : 1,
       }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ delay: index * 0.05, type: 'spring', stiffness: 300, damping: 25 }}
       drag
       dragMomentum={false}
       dragElastic={0}
       onDragStart={() => {
         setIsDragging(true);
-        onDragStart();
+        startPosRef.current = { x: position.x, y: position.y };
       }}
       onDrag={(e, info) => {
-        setDragOffset({
-          x: info.offset.x / scale,
-          y: info.offset.y / scale,
-        });
+        // Update position in real-time during drag
+        const newX = startPosRef.current.x + info.offset.x / scale;
+        const newY = startPosRef.current.y + info.offset.y / scale;
+        onPositionChange(newX, newY);
       }}
-      onDragEnd={(e, info) => {
+      onDragEnd={() => {
         setIsDragging(false);
-        onDragEnd({
-          point: info.point,
-          offset: { x: info.offset.x, y: info.offset.y },
-        });
-        setDragOffset({ x: 0, y: 0 });
       }}
     >
       <ArchitectureComponent
