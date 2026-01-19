@@ -22,6 +22,7 @@ export interface Simulation {
   id: string;
   name: string;
   description: string;
+  category?: 'base' | 'crud' | 'errors' | 'payments' | 'files' | 'auth' | 'performance' | 'realtime';
   steps: SimulationStep[];
 }
 
