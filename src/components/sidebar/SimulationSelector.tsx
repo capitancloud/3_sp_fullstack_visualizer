@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { 
   LogIn, UserPlus, Download, ArrowRight, 
-  UserCog, UserX, Search,
+  UserCog, UserX, Search, Database,
   ShieldX, FileQuestion, ServerCrash, Clock,
   CreditCard, Upload, KeyRound, Zap, Bell, MessageCircle,
   ChevronDown
@@ -27,6 +27,7 @@ const iconMap: Record<string, React.ElementType> = {
   register: UserPlus,
   'load-data': Download,
   // CRUD
+  'crud-basic': Database,
   'update-profile': UserCog,
   'delete-account': UserX,
   'search-filter': Search,
