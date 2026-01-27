@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Github, BookOpen, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface HeaderProps {
@@ -31,15 +31,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
 
-      <nav className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-          <BookOpen className="h-4 w-4 mr-2" />
-          <span className="hidden sm:inline">Documentazione</span>
-        </Button>
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-          <Github className="h-4 w-4" />
-        </Button>
-      </nav>
+      <div />
     </motion.header>
   );
 }
