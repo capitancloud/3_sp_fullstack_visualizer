@@ -142,102 +142,192 @@ const Index = () => {
 };
 
 function EmptyState({ onSelectSimulation }: { onSelectSimulation: (id: string) => void }) {
+  const features = [
+    { icon: '🚀', title: 'Visualizzazione Interattiva', desc: 'Guarda i dati viaggiare in tempo reale' },
+    { icon: '📚', title: 'Impara Facendo', desc: 'Comprendi i concetti attraverso animazioni' },
+    { icon: '⚡', title: 'Velocità Regolabile', desc: 'Controlla il ritmo delle simulazioni' },
+  ];
+
   return (
-    <div className="h-full flex flex-col items-center justify-center text-center p-8">
+    <div className="h-full flex flex-col items-center justify-center p-4 lg:p-8 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md space-y-6"
+        className="max-w-4xl w-full space-y-8"
       >
-        {/* Animated architecture preview */}
-        <div className="relative mx-auto w-64 h-40">
-          <motion.div
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-client/20 border-2 border-client flex items-center justify-center"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0 }}
-          >
-            <div className="w-6 h-6 rounded bg-client/30" />
-          </motion.div>
+        {/* Hero animated architecture */}
+        <div className="relative mx-auto w-full max-w-2xl h-48 lg:h-64">
+          {/* Background glow effects */}
+          <div className="absolute inset-0 bg-gradient-to-r from-client/5 via-backend/5 to-database/5 rounded-3xl blur-3xl" />
           
-          <motion.div
-            className="absolute left-1/4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-frontend/20 border-2 border-frontend flex items-center justify-center"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
-          >
-            <div className="w-6 h-6 rounded bg-frontend/30" />
-          </motion.div>
-          
-          <motion.div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-backend/20 border-2 border-backend flex items-center justify-center"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.4 }}
-          >
-            <div className="w-6 h-6 rounded bg-backend/30" />
-          </motion.div>
-          
-          <motion.div
-            className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-xl bg-database/20 border-2 border-database flex items-center justify-center"
-            animate={{ y: [0, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
-          >
-            <div className="w-6 h-6 rounded bg-database/30" />
-          </motion.div>
-
-          {/* Connection lines */}
+          {/* Connection lines with animated pulses */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            {/* Main horizontal line */}
             <motion.line
-              x1="48" y1="80" x2="64" y2="80"
+              x1="15%" y1="50%" x2="85%" y2="50%"
               className="stroke-border"
               strokeWidth={2}
-              strokeDasharray="4 2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ delay: 0.5 }}
+              strokeDasharray="8 4"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.4 }}
+              transition={{ duration: 1.5, delay: 0.5 }}
             />
-            <motion.line
-              x1="112" y1="80" x2="128" y2="80"
-              className="stroke-border"
-              strokeWidth={2}
-              strokeDasharray="4 2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ delay: 0.7 }}
+            
+            {/* Animated data packets */}
+            <motion.circle
+              r="4"
+              className="fill-client"
+              initial={{ cx: "15%", cy: "50%" }}
+              animate={{ cx: ["15%", "35%", "15%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
-            <motion.line
-              x1="176" y1="80" x2="192" y2="80"
-              className="stroke-border"
-              strokeWidth={2}
-              strokeDasharray="4 2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ delay: 0.9 }}
+            <motion.circle
+              r="4"
+              className="fill-frontend"
+              initial={{ cx: "35%", cy: "50%" }}
+              animate={{ cx: ["35%", "55%", "35%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+            />
+            <motion.circle
+              r="4"
+              className="fill-backend"
+              initial={{ cx: "55%", cy: "50%" }}
+              animate={{ cx: ["55%", "75%", "55%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
             />
           </svg>
-        </div>
 
-        <div className="space-y-3">
-          <h2 className="text-2xl font-bold gradient-text">
-            Benvenuto in FullStack Visualizer
-          </h2>
-          <p className="text-muted-foreground">
-            Seleziona una simulazione dalla barra laterale per vedere come i dati viaggiano 
-            tra browser, frontend, backend e database.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3">
-          {simulations.slice(0, 3).map((sim) => (
-            <motion.button
-              key={sim.id}
-              onClick={() => onSelectSimulation(sim.id)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-4 py-2 rounded-lg bg-muted text-sm font-medium hover:bg-primary/10 hover:text-primary transition-colors"
+          {/* Architecture components */}
+          <div className="absolute inset-0 flex items-center justify-between px-4 lg:px-8">
+            {/* Client */}
+            <motion.div
+              className="flex flex-col items-center gap-2"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
-              {sim.name}
-            </motion.button>
-          ))}
+              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-client/30 to-client/10 border-2 border-client shadow-lg shadow-client/20 flex items-center justify-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-client/40 flex items-center justify-center">
+                  <span className="text-lg lg:text-xl">🌐</span>
+                </div>
+              </div>
+              <span className="text-xs font-medium text-client">Browser</span>
+            </motion.div>
+
+            {/* Frontend */}
+            <motion.div
+              className="flex flex-col items-center gap-2"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+            >
+              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-frontend/30 to-frontend/10 border-2 border-frontend shadow-lg shadow-frontend/20 flex items-center justify-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-frontend/40 flex items-center justify-center">
+                  <span className="text-lg lg:text-xl">⚛️</span>
+                </div>
+              </div>
+              <span className="text-xs font-medium text-frontend">Frontend</span>
+            </motion.div>
+
+            {/* Backend */}
+            <motion.div
+              className="flex flex-col items-center gap-2"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+            >
+              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-backend/30 to-backend/10 border-2 border-backend shadow-lg shadow-backend/20 flex items-center justify-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-backend/40 flex items-center justify-center">
+                  <span className="text-lg lg:text-xl">⚙️</span>
+                </div>
+              </div>
+              <span className="text-xs font-medium text-backend">Backend</span>
+            </motion.div>
+
+            {/* Database */}
+            <motion.div
+              className="flex flex-col items-center gap-2"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.9 }}
+            >
+              <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-2xl bg-gradient-to-br from-database/30 to-database/10 border-2 border-database shadow-lg shadow-database/20 flex items-center justify-center">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg bg-database/40 flex items-center justify-center">
+                  <span className="text-lg lg:text-xl">🗄️</span>
+                </div>
+              </div>
+              <span className="text-xs font-medium text-database">Database</span>
+            </motion.div>
+          </div>
         </div>
+
+        {/* Text content */}
+        <div className="text-center space-y-4">
+          <motion.h2 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl lg:text-4xl font-bold"
+          >
+            <span className="bg-gradient-to-r from-client via-backend to-database bg-clip-text text-transparent">
+              FullStack Visualizer
+            </span>
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-muted-foreground text-base lg:text-lg max-w-xl mx-auto"
+          >
+            Esplora come funzionano le applicazioni web moderne attraverso simulazioni animate e interattive
+          </motion.p>
+        </div>
+
+        {/* Feature cards */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        >
+          {features.map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 + index * 0.1 }}
+              className="p-4 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition-all"
+            >
+              <div className="text-2xl mb-2">{feature.icon}</div>
+              <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground">{feature.desc}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.9 }}
+          className="text-center space-y-4"
+        >
+          <p className="text-sm text-muted-foreground">
+            👈 Seleziona una simulazione dalla barra laterale per iniziare
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {simulations.slice(0, 4).map((sim, index) => (
+              <motion.button
+                key={sim.id}
+                onClick={() => onSelectSimulation(sim.id)}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 + index * 0.1 }}
+                className="px-4 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-sm font-medium text-primary hover:bg-primary/20 hover:border-primary/40 transition-all shadow-sm"
+              >
+                {sim.name}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
