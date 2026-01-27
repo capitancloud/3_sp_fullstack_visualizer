@@ -1,13 +1,12 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Layers, ChevronDown } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import { SimulationSelector } from './SimulationSelector';
 import { SimulationControls } from './SimulationControls';
 import { StepExplanation } from './StepExplanation';
 import { SimulationInfo } from './SimulationInfo';
 import { Simulation, SimulationStep, AnimationSpeed } from '@/types/simulation';
 import { simulations } from '@/data/simulations';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useState } from 'react';
+
 interface SidebarProps {
   selectedSimulation: Simulation | null;
   onSelectSimulation: (id: string) => void;
@@ -35,8 +34,6 @@ export function Sidebar({
   onReset,
   onSpeedChange,
 }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(true);
-
   return (
     <motion.aside
       initial={{ x: -20, opacity: 0 }}
@@ -57,57 +54,42 @@ export function Sidebar({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Collapsible Mode indicator */}
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors cursor-pointer">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Modalità Osserva</span>
-            </div>
-            <ChevronDown 
-              className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Simulation selector */}
+        <SimulationSelector
+          simulations={simulations}
+          selectedId={selectedSimulation?.id || null}
+          onSelect={onSelectSimulation}
+        />
+
+        {/* Controls - only show when simulation selected */}
+        {selectedSimulation && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            {/* Simulation Info Box */}
+            <SimulationInfo simulation={selectedSimulation} />
+
+            <SimulationControls
+              isPlaying={isPlaying}
+              speed={speed}
+              onPlay={onPlay}
+              onPause={onPause}
+              onNext={onNext}
+              onReset={onReset}
+              onSpeedChange={onSpeedChange}
+              canNext={currentStepIndex < selectedSimulation.steps.length - 1}
             />
-          </CollapsibleTrigger>
 
-          <CollapsibleContent className="pt-4 space-y-4">
-            {/* Simulation selector */}
-            <SimulationSelector
-              simulations={simulations}
-              selectedId={selectedSimulation?.id || null}
-              onSelect={onSelectSimulation}
+            <StepExplanation
+              steps={selectedSimulation.steps}
+              currentStepIndex={currentStepIndex}
+              currentStep={currentStep}
             />
-
-            {/* Controls - only show when simulation selected */}
-            {selectedSimulation && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
-              >
-                {/* Simulation Info Box */}
-                <SimulationInfo simulation={selectedSimulation} />
-
-                <SimulationControls
-                  isPlaying={isPlaying}
-                  speed={speed}
-                  onPlay={onPlay}
-                  onPause={onPause}
-                  onNext={onNext}
-                  onReset={onReset}
-                  onSpeedChange={onSpeedChange}
-                  canNext={currentStepIndex < selectedSimulation.steps.length - 1}
-                />
-
-                <StepExplanation
-                  steps={selectedSimulation.steps}
-                  currentStepIndex={currentStepIndex}
-                  currentStep={currentStep}
-                />
-              </motion.div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
+          </motion.div>
+        )}
       </div>
 
       {/* Footer */}
