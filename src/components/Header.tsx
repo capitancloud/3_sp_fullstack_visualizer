@@ -1,12 +1,15 @@
 import { motion } from 'framer-motion';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   onMenuClick?: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const { logout } = useAuth();
+  
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -31,7 +34,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         </div>
       </div>
 
-      <div />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={logout}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <LogOut className="h-4 w-4 mr-2" />
+        <span className="hidden sm:inline">Esci</span>
+      </Button>
     </motion.header>
   );
 }
