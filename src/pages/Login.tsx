@@ -121,12 +121,6 @@ export default function Login() {
             </Button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-border">
-            <p className="text-xs text-muted-foreground text-center">
-              L'accesso è protetto da codice di sicurezza hashato
-            </p>
-          </div>
         </div>
 
         {/* Decorative elements */}
