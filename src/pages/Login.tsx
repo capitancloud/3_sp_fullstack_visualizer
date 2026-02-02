@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Layers, KeyRound, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
+import { KeyRound, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/useAuth';
+import superProgrammatoreLogo from '@/assets/super-programmatore-logo.png';
 
 export default function Login() {
   const [code, setCode] = useState('');
@@ -50,9 +51,13 @@ export default function Login() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", delay: 0.1 }}
-              className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4"
+              className="flex justify-center mb-4"
             >
-              <Layers className="w-8 h-8 text-primary" />
+              <img 
+                src={superProgrammatoreLogo} 
+                alt="Super Programmatore Logo" 
+                className="w-48 h-auto object-contain"
+              />
             </motion.div>
             
             <h1 className="text-2xl font-bold text-foreground mb-2">
