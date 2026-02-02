@@ -6,7 +6,6 @@ import { ArchitectureCanvas } from '@/components/architecture/ArchitectureCanvas
 import { simulations } from '@/data/simulations';
 import { Simulation, SimulationStep, AnimationSpeed } from '@/types/simulation';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import superProgrammatoreLogo from '@/assets/super-programmatore-logo.png';
 
 const Index = () => {
   const [selectedSimulation, setSelectedSimulation] = useState<Simulation | null>(null);
@@ -257,20 +256,6 @@ function EmptyState({ onSelectSimulation }: { onSelectSimulation: (id: string) =
             </motion.div>
           </div>
         </div>
-
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex justify-center"
-        >
-          <img 
-            src={superProgrammatoreLogo} 
-            alt="Super Programmatore Logo" 
-            className="w-48 h-auto lg:w-64 xl:w-72 object-contain"
-          />
-        </motion.div>
 
         {/* Text content */}
         <div className="text-center space-y-4">
